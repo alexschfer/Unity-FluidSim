@@ -19,9 +19,10 @@ public struct FluidVolume
     float[] Vx0; //previous x and y
     float[] Vy0;
 
+    public int IX(int x, int y) => x + y * size;
+
     //fluid volume initialization
-    public FluidVolume(int size, int diffusion, int viscosity, float dt)
-    {
+    public FluidVolume(int size, int diffusion, int viscosity, float dt) {
         this.size = size;
         this.dt = dt;
         this.diff = diffusion;
@@ -35,5 +36,16 @@ public struct FluidVolume
 
         this.Vx0 = new float[size * size];
         this.Vy0 = new float[size * size];
+    }
+
+    public void AddDensity(int x, int y, float amount) {
+        int index = IX(x, y);
+        this.density[index] += amount;
+    }
+
+    public void AddVelocity(int x, int y, float amountX, float amountY) {
+        int index = IX(x, y);
+        this.Vx[index] += amountX;
+        this.Vy[index] += amountY;
     }
 }
