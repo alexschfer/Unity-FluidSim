@@ -41,6 +41,34 @@ public struct FluidVolume
         this.Vy0 = new float[size * size];
     }
 
+    /// <summary>
+    /// Simulation Step
+    /// </summary>
+    public void Step() {
+        float visc = this.visc;
+        float diff = this.diff;
+        float dt = this.dt;
+        float[] Vx = this.Vx;
+        float[] Vy = this.Vy;
+        float[] Vx0 = this.Vx0;
+        float[] Vy0 = this.Vy0;
+        float[] s = this.s;
+        float[] density = this.density;
+
+        Diffuse(1, Vx0, Vx, visc, dt);
+        Diffuse(2, Vy0, Vy, visc, dt);
+
+        Project(Vx0, Vy0, Vx, Vy);
+
+        Advect(1, Vx, Vx0, Vx0, Vy0, dt);
+        Advect(2, Vy, Vy0, Vx0, Vy0, dt);
+
+        Project(Vx, Vy, Vx0, Vy0);
+
+        Diffuse(0, s, density, diff, dt);
+        Advect(0, density, s, Vx, Vy, dt);
+    }
+
     public void AddDensity(int x, int y, float amount) {
         int index = IX(x, y);
         this.density[index] += amount;
@@ -69,7 +97,7 @@ public struct FluidVolume
     /// <summary>
     /// Fixes net in and outflow in cells and restores equilibrium
     /// </summary>
-    void Project(float[] velocX, float[] velocY, float[] velocZ, float[] p, float[] div) {
+    void Project(float[] velocX, float[] velocY, float[] p, float[] div) {
         for (int j = 1; j < size - 1; j++)
         {
             for (int i = 1; i < size - 1; i++)
