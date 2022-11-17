@@ -58,11 +58,17 @@ public struct FluidVolume
      * 3. advect
      */
 
+    /// <summary>
+    /// Diffuses the Liquid by spreading diffusion and velocity values
+    /// </summary>
     void Diffuse(int b, float[] x, float[] x0, float diff, float dt) {
         float a = dt * diff * (size - 2) * (size - 2);
         lin_solve(b, x, x0, a, 1 + 6 * a);
     }
 
+    /// <summary>
+    /// Fixes net in and outflow in cells and restores equilibrium
+    /// </summary>
     void Project(float[] velocX, float[] velocY, float[] velocZ, float[] p, float[] div) {
         for (int j = 1; j < size - 1; j++)
         {
@@ -85,16 +91,17 @@ public struct FluidVolume
         {
             for (int i = 1; i < size - 1; i++)
             {
-                velocX[IX(i, j)] -= 0.5f * (p[IX(i + 1, j)]
-                                                - p[IX(i - 1, j)]) * size;
-                velocY[IX(i, j)] -= 0.5f * (p[IX(i, j + 1)]
-                                                - p[IX(i, j - 1)]) * size;
+                velocX[IX(i, j)] -= 0.5f * (p[IX(i + 1, j)] - p[IX(i - 1, j)]) * size;
+                velocY[IX(i, j)] -= 0.5f * (p[IX(i, j + 1)] - p[IX(i, j - 1)]) * size;
             }
         }
         set_bnd(1, velocX);
         set_bnd(2, velocY);
     }
 
+    /// <summary>
+    /// Moves Liquid according to its velocities
+    /// </summary>
     void Advect(int b, float[] d, float[] d0, float[] velocX, float[] velocY, float dt)
     {
         float i0, i1, j0, j1;
@@ -146,7 +153,9 @@ public struct FluidVolume
     }
     #endregion
 
-    // Linear Solve
+    /// <summary>
+    /// Solving a linear differential equation
+    /// </summary>
     void lin_solve(int b, float[] x, float[] x0, float a, float c)
     {
         float cRecip = 1.0f / c;
@@ -166,14 +175,19 @@ public struct FluidVolume
         set_bnd(b, x);
     }
 
+    /// <summary>
+    /// Set bounds. Reflect Liquid inertia along the borders of the Liquid Volume
+    /// </summary>
     void set_bnd(int b, float[] x)
     {
+        //check for borders bottom and top
         for (int i = 1; i < size - 1; i++)
         {
             x[IX(i, 0)] = b == 2 ? -x[IX(i, 1)] : x[IX(i, 1)];
             x[IX(i, size - 1)] = b == 2 ? -x[IX(i, size - 2)] : x[IX(i, size - 2)];
         }
 
+        //check for borders left and right
         for (int j = 1; j < size - 1; j++)
         {
             x[IX(0, j)] = b == 1 ? -x[IX(1, j)] : x[IX(1, j)];
