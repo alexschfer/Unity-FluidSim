@@ -22,7 +22,11 @@ public struct FluidVolume
     /// <summary>
     /// Convert int vector to index x + y * size
     /// </summary>
-    public int IX(int x, int y) => x + y * size;
+    public int IX(int x, int y) => Mathf.Clamp(x, 0, size - 1) + Mathf.Clamp(y, 0, size - 1) * size;
+
+    public int Size { get => size; }
+    public float GetDensity(int x, int y) => density[IX(x, y)];
+    public Vector2 GetVelocity(int x, int y) => new Vector2(Vx[IX(x, y)], Vy[IX(x, y)]);
 
     //fluid volume initialization
     public FluidVolume(int size, int diffusion, int viscosity, float dt) {
